@@ -1,0 +1,167 @@
+openapi: 3.0.0
+info:
+  title: Service template service
+  version: "1.0"
+  description: Service template API
+tags:
+  - name: Template
+    description: Service template management
+
+servers:
+  - url: http://localhost:8080
+    description: Local server
+
+
+paths:
+  /test:
+    post:
+      tags:
+        - Summary
+      operationId: test
+      responses:
+        "201":
+          description: Returns generated article summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Summary"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+components:
+  parameters:
+    PageQueryParameter:
+      name: page
+      in: query
+      schema:
+        type: integer
+        minimum: 1
+        default: 1
+    SizeQueryParameter:
+      name: size
+      in: query
+      schema:
+        type: integer
+        minimum: 10
+        maximum: 30
+        default: 10
+  # ========================================
+  # ===== Request bodies
+  # ========================================
+  requestBodies:
+    GenerateSummaryRequest:
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/NewSummary"
+      required: true
+
+  # ========================================
+  # ===== Schemas
+  # ========================================
+  schemas:
+    NewSummary:
+      type: object
+      properties:
+        article:
+          type: string
+          description: Article to summarize
+    Summary:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+        content:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+          readOnly: true
+        updatedAt:
+          type: string
+          format: date-time
+          readOnly: true
+        deletedAt:
+          type: string
+          format: date-time
+          readOnly: true
+    Error:
+      required:
+        - message
+      properties:
+        message:
+          type: string
+        errorCode:
+          type: string
+        errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/FieldError'
+
+    FieldError:
+      required:
+        - message
+        - field
+      properties:
+        errorCode:
+          type: string
+        message:
+          type: string
+        field:
+          type: string
+
+  responses:
+    BadRequest:
+      description: Bad Request
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    UnsupportedMediaType:
+      description: Unsupported Media Type
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    Unauthorized:
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    Forbidden:
+      description: Forbidden
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    NotFound:
+      description: Not Found
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    Conflict:
+      description: Conflict
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    UnprocessableEntity:
+      description: Unprocessable Entity
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    NotAcceptable:
+      description: Not Acceptable
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"

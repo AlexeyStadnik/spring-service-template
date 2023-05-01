@@ -1,0 +1,95 @@
+buildscript {
+	ext {
+		basePackage = "com.service"
+		openApiVersion = '6.5.0'
+		swaggerAnnotationsVersion = '2.2.9'
+		mapstructVersion = '1.5.4.Final'
+		hibernateTypesVersion = '2.16.2'
+		testcontainersVersion = "1.17.2"
+		javaFakerVersion = "1.0.2"
+		hypersistenceVersion = "3.3.2"
+		resilience4jVersion = "2.0.2"
+		deeplVersion = "1.1.0"
+	}
+	dependencies {
+		classpath "org.openapitools:openapi-generator-gradle-plugin:${openApiVersion}"
+	}
+}
+plugins {
+	id 'java'
+	id 'org.springframework.boot' version '3.0.6'
+	id 'io.spring.dependency-management' version '1.1.0'
+}
+
+//Openapi generator plugin and configuration
+apply plugin: 'org.openapi.generator'
+apply from: "gradle/openapi.gradle"
+
+//Static analysis plugins and configuration
+apply plugin: 'pmd'
+apply from: "gradle/pmd.gradle"
+
+apply plugin: 'checkstyle'
+apply from: "gradle/checkstyle.gradle"
+
+//Useful mapstruct property
+apply from: "gradle/mapstruct.gradle"
+
+group = 'com.service'
+version = '1.0'
+sourceCompatibility = '17'
+
+configurations {
+	compileOnly {
+		extendsFrom annotationProcessor
+	}
+}
+
+repositories {
+	mavenCentral()
+}
+
+dependencies {
+	implementation "org.springframework.boot:spring-boot-starter-web"
+	implementation "org.springframework.boot:spring-boot-starter-data-jpa"
+	implementation "org.springframework.boot:spring-boot-starter-validation"
+	implementation "org.springframework.boot:spring-boot-starter-actuator"
+
+	implementation "io.github.resilience4j:resilience4j-spring-boot3:${resilience4jVersion}"
+
+	// db
+	implementation 'org.flywaydb:flyway-core'
+	implementation "io.hypersistence:hypersistence-utils-hibernate-60:${hypersistenceVersion}"
+
+	// mapstruct
+	implementation "org.mapstruct:mapstruct:${mapstructVersion}"
+	implementation "org.mapstruct:mapstruct-jdk8:${mapstructVersion}"
+
+	// Swagger annotations are required for the openapi generator
+	implementation "io.swagger.core.v3:swagger-annotations:${swaggerAnnotationsVersion}"
+
+	compileOnly 'org.projectlombok:lombok'
+
+	developmentOnly 'org.springframework.boot:spring-boot-devtools'
+
+	runtimeOnly 'org.postgresql:postgresql'
+
+	annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
+	annotationProcessor 'org.projectlombok:lombok'
+	// mapstruct should be declared after lombok !
+	annotationProcessor "org.mapstruct:mapstruct-processor:${mapstructVersion}"
+
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testImplementation "org.testcontainers:testcontainers:${testcontainersVersion}"
+	testImplementation "org.testcontainers:postgresql:${testcontainersVersion}"
+	testImplementation "com.github.javafaker:javafaker:${javaFakerVersion}"
+}
+
+configurations {
+	testAnnotationProcessor.extendsFrom annotationProcessor
+	testCompileOnly.extendsFrom compileOnly
+}
+
+tasks.named('test') {
+	useJUnitPlatform()
+}
